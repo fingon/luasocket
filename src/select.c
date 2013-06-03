@@ -40,7 +40,11 @@ int select_open(lua_State *L) {
     lua_pushstring(L, "_SETSIZE");
     lua_pushnumber(L, FD_SETSIZE);
     lua_rawset(L, -3);
+#if LUA_VERSION_NUM > 501 && !defined(LUA_COMPAT_MODULE)
+    luaL_setfuncs(L, func, 0);
+#else
     luaL_openlib(L, NULL, func, 0);
+#endif
     return 0;
 }
 
@@ -122,7 +126,7 @@ static void collect_fd(lua_State *L, int tab, int itab,
     if (lua_isnil(L, tab)) return;
     /* otherwise we need it to be a table */
     luaL_checktype(L, tab, LUA_TTABLE);
-    while (1) {
+    for ( ;; ) {
         t_socket fd;
         lua_pushnumber(L, i);
         lua_gettable(L, tab);
@@ -147,7 +151,7 @@ static void collect_fd(lua_State *L, int tab, int itab,
             if (*max_fd == SOCKET_INVALID || *max_fd < fd) 
                 *max_fd = fd;
             /* make sure we can map back from descriptor to the object */
-            lua_pushnumber(L, fd);
+            lua_pushnumber(L, (lua_Number) fd);
             lua_pushvalue(L, -2);
             lua_settable(L, itab);
         }
@@ -160,7 +164,7 @@ static int check_dirty(lua_State *L, int tab, int dtab, fd_set *set) {
     int ndirty = 0, i = 1;
     if (lua_isnil(L, tab)) 
         return 0;
-    while (1) { 
+    for ( ;; ) { 
         t_socket fd;
         lua_pushnumber(L, i);
         lua_gettable(L, tab);
@@ -187,7 +191,7 @@ static void return_fd(lua_State *L, fd_set *set, t_socket max_fd,
     for (fd = 0; fd < max_fd; fd++) {
         if (FD_ISSET(fd, set)) {
             lua_pushnumber(L, ++start);
-            lua_pushnumber(L, fd);
+            lua_pushnumber(L, (lua_Number) fd);
             lua_gettable(L, itab);
             lua_settable(L, tab);
         }
@@ -197,7 +201,7 @@ static void return_fd(lua_State *L, fd_set *set, t_socket max_fd,
 static void make_assoc(lua_State *L, int tab) {
     int i = 1, atab;
     lua_newtable(L); atab = lua_gettop(L);
-    while (1) {
+    for ( ;; ) {
         lua_pushnumber(L, i);
         lua_gettable(L, tab);
         if (!lua_isnil(L, -1)) {

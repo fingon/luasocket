@@ -1,27 +1,27 @@
-require"socket"
-local socket = require"socket.unix"
+local socket = require"socket"
+socket.unix = require"socket.unix"
 
-host = "luasocket"
+host = host or "luasocket"
 
 function pass(...)
-    local s = string.format(unpack(arg))
+    local s = string.format(...)
     io.stderr:write(s, "\n")
 end
 
 function fail(...)
-    local s = string.format(unpack(arg))
+    local s = string.format(...)
     io.stderr:write("ERROR: ", s, "!\n")
 socket.sleep(3)
     os.exit()
 end
 
 function warn(...)
-    local s = string.format(unpack(arg))
+    local s = string.format(...)
     io.stderr:write("WARNING: ", s, "\n")
 end
 
 function remote(...)
-    local s = string.format(unpack(arg))
+    local s = string.format(...)
     s = string.gsub(s, "\n", ";")
     s = string.gsub(s, "%s+", " ")
     s = string.gsub(s, "^%s*", "")
@@ -82,7 +82,7 @@ function check_timeout(tm, sl, elapsed, err, opp, mode, alldone)
     end
 end
 
-if not socket.DEBUG then
+if not socket._DEBUG then
     fail("Please define LUASOCKET_DEBUG and recompile LuaSocket")
 end
 
@@ -115,7 +115,7 @@ else pass("connected!") end
 
 ------------------------------------------------------------------------
 function test_methods(sock, methods)
-    for _, v in methods do
+    for _, v in pairs(methods) do
         if type(sock[v]) ~= "function" then 
             fail(sock.class .. " method '" .. v .. "' not registered") 
         end
