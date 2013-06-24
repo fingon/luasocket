@@ -131,10 +131,11 @@ O_macosx=o
 CC_macosx=gcc
 DEF_macosx= -DLUASOCKET_$(DEBUG) -DUNIX_HAS_SUN_LEN -DLUA_$(COMPAT)_MODULE \
 	-DLUASOCKET_API='__attribute__((visibility("default")))' \
+	-DUNIX_API='__attribute__((visibility("default")))' \
 	-DMIME_API='__attribute__((visibility("default")))'
 CFLAGS_macosx= -I$(LUAINC) $(DEF) -pedantic -Wall -O2 -fno-common \
 	-fvisibility=hidden
-LDFLAGS_macosx= -bundle -undefined dynamic_lookup -o
+LDFLAGS_macosx= -bundle -undefined dynamic_lookup -o 
 LD_macosx= export MACOSX_DEPLOYMENT_TARGET="10.3"; gcc
 SOCKET_macosx=usocket.o
 
@@ -146,6 +147,7 @@ O_linux=o
 CC_linux=gcc
 DEF_linux=-DLUASOCKET_$(DEBUG) -DLUA_$(COMPAT)_MODULE \
 	-DLUASOCKET_API='__attribute__((visibility("default")))' \
+	-DUNIX_API='__attribute__((visibility("default")))' \
 	-DMIME_API='__attribute__((visibility("default")))'
 CFLAGS_linux= -I$(LUAINC) $(DEF) -pedantic -Wall -Wshadow -Wextra \
 	-Wimplicit -O2 -ggdb3 -fpic -fvisibility=hidden
@@ -200,7 +202,7 @@ SOCKET_win32=wsocket.obj
 #
 SO=$(SO_$(PLAT))
 O=$(O_$(PLAT))
-SOCKET_V=2.1
+SOCKET_V=3.0-rc1
 MIME_V=1.0.3
 SOCKET_SO=socket.$(SO).$(SOCKET_V)
 MIME_SO=mime.$(SO).$(MIME_V)
