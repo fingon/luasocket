@@ -20,6 +20,12 @@ PLAT?=linux
 # lua version to build against
 LUAV?=5.1
 
+# MYCFLAGS: to be set by user if needed
+MYCFLAGS=
+
+# MYLDFLAGS: to be set by user if needed
+MYLDFLAGS=
+
 # DEBUG: NODEBUG DEBUG
 # debug mode causes luasocket to collect and returns timing information useful
 # for testing and debugging luasocket itself
@@ -40,7 +46,6 @@ LUAPREFIX_macosx?=/opt/local
 CDIR_macosx?=lib/lua/$(LUAV)
 LDIR_macosx?=share/lua/$(LUAV)
 
-
 # LUAINC_linux:
 # /usr/include/lua$(LUAV)
 # /usr/local/include
@@ -51,6 +56,15 @@ LUAINC_linux?=$(LUAINC_linux_base)/lua$(LUAV)
 LUAPREFIX_linux?=/usr/local
 CDIR_linux?=lib/lua/$(LUAV)
 LDIR_linux?=share/lua/$(LUAV)
+
+# LUAINC_freebsd:
+# /usr/local/include/lua$(LUAV)
+# where lua headers are found for linux builds
+LUAINC_freebsd_base?=/usr/local/include/
+LUAINC_freebsd?=$(LUAINC_freebsd_base)/lua$(LUAV)
+LUAPREFIX_freebsd?=/usr/local/
+CDIR_freebsd?=lib/lua/$(LUAV)
+LDIR_freebsd?=share/lua/$(LUAV)
 
 # where lua headers are found for mingw builds
 # LUAINC_mingw:
@@ -157,6 +171,22 @@ SOCKET_linux=usocket.o
 
 #------
 # Compiler and linker settings
+# for FreeBSD
+SO_freebsd=so
+O_freebsd=o
+CC_freebsd=gcc
+DEF_freebsd=-DLUASOCKET_$(DEBUG) -DLUA_$(COMPAT)_MODULE \
+	-DLUASOCKET_API='__attribute__((visibility("default")))' \
+	-DUNIX_API='__attribute__((visibility("default")))' \
+	-DMIME_API='__attribute__((visibility("default")))'
+CFLAGS_freebsd= -I$(LUAINC) $(DEF) -pedantic -Wall -Wshadow -Wextra \
+	-Wimplicit -O2 -ggdb3 -fpic -fvisibility=hidden
+LDFLAGS_freebsd=-O -shared -fpic -o 
+LD_freebsd=gcc
+SOCKET_freebsd=usocket.o
+
+#------
+# Compiler and linker settings
 # for MingW
 SO_mingw=dll
 O_mingw=o
@@ -195,7 +225,7 @@ SOCKET_win32=wsocket.obj
 .SUFFIXES: .obj
 
 .c.obj:
-	$(CC) $(CFLAGS) //Fo"$@" //c $<
+	$(CC) $(LUASOCKET_CFLAGS) //Fo"$@" //c $<
 
 #------
 # Output file names
@@ -215,8 +245,8 @@ SOCKET=$(SOCKET_$(PLAT))
 #
 CC=$(CC_$(PLAT))
 DEF=$(DEF_$(PLAT))
-CFLAGS=$(CFLAGS_$(PLAT))
-LDFLAGS=$(LDFLAGS_$(PLAT))
+CFLAGS=$(MYCFLAGS) $(CFLAGS_$(PLAT))
+LDFLAGS=$(MYLDFLAGS) $(LDFLAGS_$(PLAT))
 LD=$(LD_$(PLAT))
 LUAINC= $(LUAINC_$(PLAT))
 LUALIB= $(LUALIB_$(PLAT))
@@ -260,7 +290,7 @@ UNIX_OBJS=\
 #------
 # Modules belonging to serial (device streams)
 #
-SERIAL_OBJS:=\
+SERIAL_OBJS=\
 	buffer.$(O) \
 	auxiliar.$(O) \
 	options.$(O) \
@@ -289,6 +319,10 @@ TO_TOP_LDIR= \
 # Targets
 #
 default: $(PLAT)
+
+
+freebsd:
+	$(MAKE) all-unix PLAT=freebsd
 
 macosx:
 	$(MAKE) all-unix PLAT=macosx
